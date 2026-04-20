@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Descensus ad Inferos - Escape Room Premium</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;1,900&display=swap" rel="stylesheet">
     <style>
         body {
@@ -100,49 +97,88 @@
         .map-node.locked { background: #18181b; border-color: #3f3f46; color: #52525b; box-shadow: none; }
         .map-node.active { background: #450a0a; border-color: #ef4444; color: #fca5a5; box-shadow: 0 0 15px rgba(239,68,68,0.5); transform: scale(1.1); }
         .map-node.completed { background: #ef4444; border-color: #b91c1c; color: #fff; box-shadow: 0 0 10px rgba(239,68,68,0.8); }
+
+        /* NUEVO: Estilos para botones de control de experiencia (Audio y Fullscreen) */
+        .premium-control {
+            background: rgba(20, 0, 0, 0.6);
+            border: 1px solid rgba(220, 38, 38, 0.4);
+            color: #fca5a5;
+            padding: 0.75rem;
+            border-radius: 50%;
+            transition: all 0.3s;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+        }
+        .premium-control:hover {
+            background: rgba(220, 38, 38, 0.8);
+            color: white;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+            transform: scale(1.1);
+        }
     </style>
 </head>
 <body class="flex flex-col items-center p-4 md:p-8 relative">
 
-    <!-- PANTALLA DE INICIO -->
+    <audio id="ambient-audio" loop>
+        <source src="https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
+        Tu navegador no soporta el elemento de audio.
+    </audio>
+
+    <div class="fixed bottom-6 right-6 z-[300] flex flex-col gap-3">
+        <button onclick="toggleFullScreen()" class="premium-control" title="Pantalla Completa">
+            <i data-lucide="maximize" id="fullscreen-icon" class="w-6 h-6"></i>
+        </button>
+        <button onclick="toggleAudio()" class="premium-control" title="Activar/Desactivar Música">
+            <i data-lucide="volume-x" id="audio-icon" class="w-6 h-6"></i>
+        </button>
+    </div>
+
     <div id="introStage" class="w-full max-w-4xl flex flex-col items-center text-center mt-6 md:mt-12 space-y-8 fade-in">
         <h1 class="text-5xl md:text-7xl text-red-700 tracking-widest uppercase flex flex-col items-center drop-shadow-[0_0_15px_rgba(220,38,38,0.3)]">
             Descensus<br><span class="text-4xl md:text-5xl text-zinc-300 mt-2">ad Inferos</span>
         </h1>
         
         <div class="bg-black/80 p-8 md:p-12 rounded-xl border border-red-900/40 shadow-2xl backdrop-blur-md w-full relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-800 to-transparent"></div>
             
-            <p class="text-lg md:text-xl leading-relaxed mb-8 text-zinc-300 text-justify font-serif">
-                <span class="text-3xl text-red-500 font-cinzel float-left mr-2 leading-none">L</span>a tragedia ha golpeado Tracia. La hermosa Eurídice ha descendido a las sombras tras la fatal mordedura de una serpiente. Armado solo con su lira y su voz, Orfeo ha bajado al Inframundo desafiando las leyes de la muerte. Su único salvoconducto es un antiguo conjuro en latín que narra su propia desdicha. 
-                <br><br>
-                Para guiar a los amantes de vuelta a la luz, debéis demostrar un dominio absoluto del latín clásico. Atravesaréis el río Estigio, los Campos de Asfódelos y el Tártaro hasta llegar a la corte del mismísimo Plutón. Solo la gramática os abrirá las puertas.
-            </p>
-            
-            <div class="mb-10 bg-red-950/20 p-6 rounded-lg border border-red-900/30 text-left">
-                <p class="text-red-400 font-cinzel text-lg mb-2 flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5"></i> El Oráculo de Perséfone</p>
-                <p class="text-sm text-zinc-400 leading-relaxed">Este grimorio incluye un diccionario interactivo total. Haciendo clic sobre <strong>cualquier palabra</strong> del texto en latín, accederéis a su análisis morfológico completo, traducción y declinación sin necesidad de magia externa.</p>
-            </div>
+            <video 
+                src="https://play.rtve.es/v/1590472/" 
+                autoplay 
+                loop 
+                muted 
+                playsinline 
+                class="absolute top-0 left-0 w-full h-full object-cover opacity-30 mix-blend-screen pointer-events-none z-0">
+            </video>
 
-            <button onclick="startGame()" class="px-10 py-5 bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 text-white font-cinzel font-bold text-xl rounded transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] w-full md:w-auto border border-red-500/50 tracking-widest uppercase">
-                Iniciar el Descenso
-            </button>
+            <div class="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent z-0"></div>
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-800 to-transparent z-10"></div>
+            
+            <div class="relative z-10">
+                <p class="text-lg md:text-xl leading-relaxed mb-8 text-zinc-300 text-justify font-serif">
+                    <span class="text-3xl text-red-500 font-cinzel float-left mr-2 leading-none">L</span>a tragedia ha golpeado Tracia. La hermosa Eurídice ha descendido a las sombras tras la fatal mordedura de una serpiente. Armado solo con su lira y su voz, Orfeo ha bajado al Inframundo desafiando las leyes de la muerte. Su único salvoconducto es un antiguo conjuro en latín que narra su propia desdicha. 
+                    <br><br>
+                    Para guiar a los amantes de vuelta a la luz, debéis demostrar un dominio absoluto del latín clásico. Atravesaréis el río Estigio, los Campos de Asfódelos y el Tártaro hasta llegar a la corte del mismísimo Plutón. Solo la gramática os abrirá las puertas.
+                </p>
+                
+                <div class="mb-10 bg-red-950/40 p-6 rounded-lg border border-red-900/50 text-left backdrop-blur-sm">
+                    <p class="text-red-400 font-cinzel text-lg mb-2 flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5"></i> El Oráculo de Perséfone</p>
+                    <p class="text-sm text-zinc-300 leading-relaxed">Este grimorio incluye un diccionario interactivo total. Haciendo clic sobre <strong>cualquier palabra</strong> del texto en latín, accederéis a su análisis morfológico completo, traducción y declinación sin necesidad de magia externa.</p>
+                </div>
+
+                <button onclick="startGame()" class="px-10 py-5 bg-gradient-to-r from-red-900 to-red-800 hover:from-red-800 hover:to-red-700 text-white font-cinzel font-bold text-xl rounded transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_25px_rgba(220,38,38,0.5)] w-full md:w-auto border border-red-500/50 tracking-widest uppercase">
+                    Iniciar el Descenso
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- ESCENARIO PRINCIPAL DEL JUEGO -->
-    <div id="gameStage" class="w-full max-w-7xl flex flex-col gap-8 hidden-stage fade-in">
+    <div id="gameStage" class="w-full max-w-7xl flex flex-col gap-8 hidden-stage fade-in relative z-10">
         
-        <!-- MAPA DEL INFRAMUNDO (Progreso) -->
         <div class="w-full max-w-4xl mx-auto mb-4 px-4 sm:px-12 mt-4">
             <h3 class="text-center font-cinzel text-zinc-500 text-sm tracking-[0.3em] uppercase mb-6">Mapa del Inframundo</h3>
             <div class="relative flex justify-between items-center w-full">
-                <!-- Línea de fondo -->
                 <div class="absolute top-1/2 left-0 w-full h-1 bg-zinc-800 -translate-y-1/2 z-0 rounded-full"></div>
-                <!-- Línea de progreso -->
                 <div id="map-progress" class="absolute top-1/2 left-0 w-0 h-1 bg-gradient-to-r from-red-900 to-red-500 shadow-[0_0_10px_red] transition-all duration-1000 -translate-y-1/2 z-0 rounded-full"></div>
 
-                <!-- Nodos -->
                 <div class="relative z-10 flex flex-col items-center gap-2 group">
                     <div id="node-1" class="map-node active w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-cinzel font-bold border-2">I</div>
                     <span class="absolute top-14 text-[10px] md:text-xs font-cinzel text-zinc-400 whitespace-nowrap opacity-100 transition-opacity">Vestíbulo</span>
@@ -167,7 +203,6 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-            <!-- COLUMNA IZQUIERDA: EL TEXTO -->
             <div class="flex flex-col h-full gap-6">
                 <div class="pergamino p-8 md:p-10 rounded-xl">
                     <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-red-900/30 rounded-full"></div>
@@ -175,8 +210,7 @@
                         Fabula Orphei
                     </h2>
                     <div id="latin-container" class="text-lg md:text-xl leading-loose text-justify font-medium text-zinc-300">
-                        <!-- Text injected by JS -->
-                    </div>
+                        </div>
                     <div class="mt-8 pt-6 border-t border-red-900/30 text-sm italic text-zinc-500 flex items-center gap-3">
                         <div class="p-2 bg-red-950/30 rounded-full text-red-400"><i data-lucide="mouse-pointer-click" class="w-4 h-4"></i></div>
                         <p>El oráculo está activo. Haz clic en CUALQUIER palabra para revelar sus misterios morfológicos.</p>
@@ -184,10 +218,8 @@
                 </div>
             </div>
 
-            <!-- COLUMNA DERECHA: LOS RETOS (Solo se muestra uno a la vez) -->
             <div class="flex flex-col relative min-h-[500px]">
                 
-                <!-- PRUEBA 1 -->
                 <div id="prueba1" class="absolute inset-0 bg-black/80 border border-red-900/50 p-8 md:p-10 rounded-xl shadow-2xl backdrop-blur-sm fade-in transition-all duration-500">
                     <h3 class="text-3xl text-red-500 mb-2 font-cinzel tracking-widest uppercase">I. Los Ecos del Averno</h3>
                     <p class="mb-8 text-zinc-400 font-serif">Las puertas se abren solo para aquellos que dominan el tiempo. Identificad los verbos ocultos escribiendo la <span class="font-bold text-red-400">palabra exacta</span> tal y como aparece en el texto latino.</p>
@@ -217,7 +249,6 @@
                     </div>
                 </div>
 
-                <!-- PRUEBA 2 -->
                 <div id="prueba2" class="absolute inset-0 bg-black/80 border border-orange-900/50 p-8 md:p-10 rounded-xl shadow-2xl backdrop-blur-sm hidden-stage transition-all duration-500">
                     <h3 class="text-3xl text-orange-500 mb-2 font-cinzel tracking-widest uppercase">II. El Río Estigia</h3>
                     <p class="mb-8 text-zinc-400 font-serif">Caronte exige un peaje gramatical. Explorad las cinco declinaciones que articulan este mito inmortal para poder subir a su barca.</p>
@@ -247,7 +278,6 @@
                     </div>
                 </div>
 
-                <!-- PRUEBA 3 -->
                 <div id="prueba3" class="absolute inset-0 bg-black/80 border border-purple-900/50 p-8 md:p-10 rounded-xl shadow-2xl backdrop-blur-sm hidden-stage transition-all duration-500">
                     <h3 class="text-3xl text-purple-500 mb-2 font-cinzel tracking-widest uppercase">III. Los Asfódelos</h3>
                     <p class="mb-8 text-zinc-400 font-serif">Camináis entre las almas vagabundas. Debéis comprender la sintaxis de la condena para encontrar el camino correcto.</p>
@@ -284,7 +314,6 @@
                     </div>
                 </div>
 
-                <!-- PRUEBA 4 -->
                 <div id="prueba4" class="absolute inset-0 bg-black/80 border border-cyan-900/50 p-8 md:p-10 rounded-xl shadow-2xl backdrop-blur-sm hidden-stage transition-all duration-500">
                     <h3 class="text-3xl text-cyan-500 mb-2 font-cinzel tracking-widest uppercase">IV. El Tártaro</h3>
                     <p class="mb-8 text-zinc-400 font-serif">Estáis a las puertas del abismo. Para evitar caer en él, vuestro conocimiento sobre los mitos clásicos debe ser impecable.</p>
@@ -334,7 +363,6 @@
                     </div>
                 </div>
 
-                <!-- PRUEBA 5 (CÓDIGO FINAL) -->
                 <div id="prueba5" class="absolute inset-0 bg-black/80 border border-emerald-900/50 p-8 md:p-10 rounded-xl shadow-2xl backdrop-blur-sm hidden-stage transition-all duration-500">
                     <h3 class="text-3xl text-emerald-500 mb-2 font-cinzel tracking-widest uppercase">V. El Palacio de Plutón</h3>
                     <p class="mb-8 text-zinc-400 font-serif">Estáis ante las grandes puertas del trono. Introducid los <span class="text-emerald-400 font-bold">seis dígitos numéricos</span> deducidos de la gramática del texto para abrirlas y escapar con Eurídice.</p>
@@ -378,8 +406,7 @@
         </div>
     </div>
 
-    <!-- PANTALLA DE VICTORIA (Simplificada, sin puntos) -->
-    <div id="victoryStage" class="w-full max-w-4xl flex flex-col items-center text-center mt-12 space-y-6 hidden-stage fade-in">
+    <div id="victoryStage" class="w-full max-w-4xl flex flex-col items-center text-center mt-12 space-y-6 hidden-stage fade-in relative z-10">
         <h1 class="text-5xl md:text-7xl font-cinzel text-emerald-400 drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] mb-4 uppercase tracking-widest">¡Ascenso a la Luz!</h1>
         <div class="text-8xl mb-6">🌅🌿</div>
         
@@ -398,8 +425,7 @@
         </div>
     </div>
 
-    <!-- Oikuaapáva (Oracle Drawer - Diccionario Manual) -->
-    <div id="oracle-drawer" class="fixed inset-y-0 right-0 w-full md:w-[500px] bg-[#0a0a0c] shadow-[-20px_0_50px_rgba(0,0,0,0.9)] translate-x-full drawer p-8 md:p-10 overflow-y-auto border-l border-red-900/50 z-[200]">
+    <div id="oracle-drawer" class="fixed inset-y-0 right-0 w-full md:w-[500px] bg-[#0a0a0c] shadow-[-20px_0_50px_rgba(0,0,0,0.9)] translate-x-full drawer p-8 md:p-10 overflow-y-auto border-l border-red-900/50 z-[400]">
         <button onclick="closeOracle()" class="mb-8 text-zinc-500 hover:text-red-500 flex items-center gap-3 font-cinzel text-sm uppercase transition-all tracking-widest font-bold">
             <i data-lucide="arrow-right" class="w-5 h-5"></i> Cerrar Grimorio
         </button>
@@ -407,10 +433,53 @@
     </div>
 
     <script>
-        // Variables de flujo
+        // NUEVO: Variables y funciones para las mejoras Premium (Audio y Pantalla Completa)
+        let isAudioPlaying = false;
+        
+        function toggleAudio() {
+            const audioEl = document.getElementById('ambient-audio');
+            const iconEl = document.getElementById('audio-icon');
+            
+            if (isAudioPlaying) {
+                audioEl.pause();
+                // Cambiamos el icono usando Lucide Icons
+                iconEl.setAttribute('data-lucide', 'volume-x');
+            } else {
+                audioEl.play();
+                // Bajamos el volumen un poco para que no moleste al pensar
+                audioEl.volume = 0.3; 
+                iconEl.setAttribute('data-lucide', 'volume-2');
+            }
+            isAudioPlaying = !isAudioPlaying;
+            // Necesario llamar a esto para que se redibuje el icono que hemos cambiado
+            lucide.createIcons();
+        }
+
+        function toggleFullScreen() {
+            const iconEl = document.getElementById('fullscreen-icon');
+            // Comprobamos si el navegador ya está en pantalla completa
+            if (!document.fullscreenElement) {
+                // Pedir pantalla completa al navegador
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error al intentar modo pantalla completa: ${err.message}`);
+                });
+                iconEl.setAttribute('data-lucide', 'minimize');
+            } else {
+                // Salir de pantalla completa
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                    iconEl.setAttribute('data-lucide', 'maximize');
+                }
+            }
+            lucide.createIcons();
+        }
+
+        // ==============================================
+        // Resto del código del Diccionario y Escape Room
+        // ==============================================
+
         let currentStage = 1;
 
-        // Generadores de Tablas HTML para el Diccionario
         function buildNounTable(nomS, vocS, accS, genS, datS, ablS, nomP, vocP, accP, genP, datP, ablP) {
             return `<table class="w-full text-xs text-left text-zinc-300 border-collapse border border-zinc-800 mt-6 shadow-xl">
                 <thead class="bg-red-950/40 text-red-400">
@@ -448,7 +517,6 @@
 
         const latinText = "Orpheus pulchram Eurydicen valde amabat. Sed misera puella a parvo serpente in silva morsa est. Postea multi dies in fletu consumebantur. Tum maritus audax cum clara lyra ad inferos properat, ubi tristes umbrae mortuorum habitant. Ibi carmen dulcissimum cantavit: \"O dei severi, spes omnis mea perdita erat; reddite mihi dulcem coniugem!\". Cerberus, canis ingens, ipso cantu placabatur. Etiam rex Pluto ipse multas lacrimas fudit et musica movebatur. Sic lex dura mortis primo rupta est. Pluto dixit: \"Si eam in atro itinere aspexeris, puella statim rapta erit. Nunc ea a te ducitur. Sed si oculos flectes, uxor tua in aeternum amittetur!\". Iam portas caecas mundi Orpheus prope superaverat. Rursus laeti lucem videbant. Subito magnus timor animum viri occupavit. Infelix amator vultum flectit et res pessima evenit. Eurydice in abyssum vi tracta est. Ianua regni in perpetuum clausa erat.";
 
-        // Diccionario Total Orfeo (Autónomo)
         const customDict = {
             'valde': { enunciado: "valde", es: { morph: "Adverbio", syntax: "C. Circunstancial de Cantidad", def: "mucho, intensamente", etym: "De validus", tabla: inv } },
             'sed': { enunciado: "sed", es: { morph: "Conjunción", syntax: "Nexo Adversativo", def: "pero, sino", etym: "PIE *swe", tabla: inv } },
@@ -597,6 +665,9 @@
         function startGame() {
             hide('introStage'); 
             show('gameStage');
+            
+            // Si quieres que el audio empiece solo al darle al botón jugar (recomendado):
+            if (!isAudioPlaying) toggleAudio();
         }
 
         function openOracle() { document.getElementById('oracle-drawer').classList.remove('translate-x-full'); }
@@ -637,13 +708,9 @@
             }
         }
 
-        // ==========================================
-        // LÓGICA DE PROGRESIÓN (ESCAPE ROOM)
-        // ==========================================
         function normalizeString(str) { return str.toLowerCase().trim().replace(/[.,;:"!?()]/g, ''); }
 
         function unlockLevel(from, to, progressPercent) {
-            // Actualizar mapa
             const currentNode = document.getElementById(`node-${from}`);
             currentNode.classList.replace('active', 'completed');
             
@@ -654,7 +721,6 @@
             
             document.getElementById('map-progress').style.width = progressPercent + '%';
 
-            // Transición de cámara
             const currentPrueba = document.getElementById(`prueba${from}`);
             const nextPrueba = document.getElementById(`prueba${to}`);
             
@@ -742,7 +808,6 @@
             const l5 = parseInt(document.getElementById('lock5').value, 10);
             const l6 = parseInt(document.getElementById('lock6').value, 10);
 
-            // Código Final: 1-4-5-6-2-1
             if (l1 === 1 && l2 === 4 && l3 === 5 && l4 === 6 && l5 === 2 && l6 === 1) {
                 hide('gameStage'); 
                 show('victoryStage');
