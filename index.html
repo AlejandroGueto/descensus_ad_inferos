@@ -98,7 +98,7 @@
         .map-node.active { background: #450a0a; border-color: #ef4444; color: #fca5a5; box-shadow: 0 0 15px rgba(239,68,68,0.5); transform: scale(1.1); }
         .map-node.completed { background: #ef4444; border-color: #b91c1c; color: #fff; box-shadow: 0 0 10px rgba(239,68,68,0.8); }
 
-        /* NUEVO: Estilos para botones de control de experiencia (Audio y Fullscreen) */
+        /* Estilos para botones de control de experiencia */
         .premium-control {
             background: rgba(20, 0, 0, 0.6);
             border: 1px solid rgba(220, 38, 38, 0.4);
@@ -121,9 +121,8 @@
 
     <audio id="ambient-audio" loop>
         <source src="https://cdn.pixabay.com/audio/2022/01/18/audio_d0a13f69d2.mp3" type="audio/mpeg">
-        <audio id="click-sfx" src="https://cdn.pixabay.com/audio/2022/03/15/audio_78bd1463eb.mp3"></audio>
-        Tu navegador no soporta el elemento de audio.
     </audio>
+    <audio id="click-sfx" src="https://cdn.pixabay.com/audio/2022/03/15/audio_78bd1463eb.mp3"></audio>
 
     <div class="fixed bottom-6 right-6 z-[300] flex flex-col gap-3">
         <button onclick="toggleFullScreen()" class="premium-control" title="Pantalla Completa">
@@ -135,6 +134,9 @@
         <button onclick="toggleNotepad()" class="premium-control" title="Bloc de Notas">
             <i data-lucide="pen-tool" id="notepad-icon" class="w-6 h-6"></i>
         </button>
+        <button onclick="showHint()" class="premium-control" title="Pedir Pista al Oráculo">
+            <i data-lucide="help-circle" class="w-6 h-6 text-yellow-600"></i>
+        </button>
     </div>
 
     <div id="introStage" class="w-full max-w-4xl flex flex-col items-center text-center mt-6 md:mt-12 space-y-8 fade-in">
@@ -144,7 +146,7 @@
         
         <div class="bg-black/80 p-8 md:p-12 rounded-xl border border-red-900/40 shadow-2xl backdrop-blur-md w-full relative overflow-hidden">
             
-           <div class="relative w-full aspect-video mb-8 rounded-lg overflow-hidden border border-red-900/50 shadow-[0_0_20px_rgba(220,38,38,0.2)] z-10">
+            <div class="relative w-full aspect-video mb-8 rounded-lg overflow-hidden border border-red-900/50 shadow-[0_0_20px_rgba(220,38,38,0.2)] z-10">
                 <iframe 
                     src="https://www.rtve.es/drmn/embed/video/1590472" 
                     width="100%" 
@@ -435,6 +437,14 @@
         <div id="oracle-content"></div>
     </div>
 
+    <div id="notepad-modal" class="fixed top-20 right-6 w-80 bg-[#111113] border border-red-900/50 p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] hidden-stage z-[300]">
+        <div class="flex justify-between items-center mb-3 border-b border-red-900/30 pb-2">
+            <h4 class="font-cinzel text-red-400 uppercase tracking-widest text-sm"><i data-lucide="scroll" class="inline w-4 h-4 mr-1"></i> Apuntes del Alma</h4>
+            <button onclick="toggleNotepad()" class="text-zinc-500 hover:text-red-500 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <textarea id="notepad-text" class="w-full h-48 bg-black/60 text-zinc-300 border border-zinc-800 rounded p-3 focus:outline-none focus:border-red-600 font-serif resize-none shadow-inner" placeholder="Escribe aquí tus deducciones, códigos o declinaciones..."></textarea>
+    </div>
+
     <script>
         // NUEVO: Variables y funciones para las mejoras Premium (Audio y Pantalla Completa)
         let isAudioPlaying = false;
@@ -445,30 +455,24 @@
             
             if (isAudioPlaying) {
                 audioEl.pause();
-                // Cambiamos el icono usando Lucide Icons
                 iconEl.setAttribute('data-lucide', 'volume-x');
             } else {
                 audioEl.play();
-                // Bajamos el volumen un poco para que no moleste al pensar
                 audioEl.volume = 0.3; 
                 iconEl.setAttribute('data-lucide', 'volume-2');
             }
             isAudioPlaying = !isAudioPlaying;
-            // Necesario llamar a esto para que se redibuje el icono que hemos cambiado
             lucide.createIcons();
         }
 
         function toggleFullScreen() {
             const iconEl = document.getElementById('fullscreen-icon');
-            // Comprobamos si el navegador ya está en pantalla completa
             if (!document.fullscreenElement) {
-                // Pedir pantalla completa al navegador
                 document.documentElement.requestFullscreen().catch(err => {
                     console.log(`Error al intentar modo pantalla completa: ${err.message}`);
                 });
                 iconEl.setAttribute('data-lucide', 'minimize');
             } else {
-                // Salir de pantalla completa
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
                     iconEl.setAttribute('data-lucide', 'maximize');
@@ -476,6 +480,44 @@
             }
             lucide.createIcons();
         }
+
+        // --- FUNCIONES PREMIUM AÑADIDAS ---
+
+        // 1. BLOC DE NOTAS
+        function toggleNotepad() {
+            document.getElementById('notepad-modal').classList.toggle('hidden-stage');
+        }
+        
+        // Guardar las notas automáticamente cada vez que el usuario teclea
+        document.getElementById('notepad-text').addEventListener('input', function(e) {
+            localStorage.setItem('orpheus_notes', e.target.value);
+        });
+
+        // 2. SISTEMA DE PISTAS (Depende de currentStage)
+        const hints = {
+            1: "Fíjate en las terminaciones verbales pasivas y activas. El primer verbo es 'rapta erit'. Búscalo en el texto.",
+            2: "Caronte exige saber qué aplacó a Cerbero ('cantu', 4ª decl.). Busca también una palabra de la 5ª que signifique 'esperanza'.",
+            3: "La condición de Plutón empieza por 'Si eam...'. Recuerda que el 'infeliz amante' es quien gira el rostro.",
+            4: "Orfeo usaba su lira (música). El río de los muertos es el Estigia. La musa de la elocuencia es Calíope.",
+            5: "P-L-U-T-O tiene 5 letras. El verbo 'habitant' acaba en -ant (1ª conj.). El ablativo es el caso número 6."
+        };
+
+        function showHint() {
+            alert("👁️ EL ORÁCULO SUSURRA:\n\n" + hints[currentStage]);
+        }
+
+        // 3. EFECTOS DE SONIDO (SFX)
+        function playClickSFX() {
+            const sfx = document.getElementById('click-sfx');
+            sfx.currentTime = 0; 
+            sfx.volume = 0.4;
+            sfx.play().catch(e => console.log("Esperando interacción para el sonido"));
+        }
+
+        // Añadir el sonido a todos los botones del juego automáticamente
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', playClickSFX);
+        });
 
         // ==============================================
         // Resto del código del Diccionario y Escape Room
@@ -656,6 +698,7 @@
             // Cargar notas guardadas si existen
             const savedNotes = localStorage.getItem('orpheus_notes');
             if (savedNotes) document.getElementById('notepad-text').value = savedNotes;
+            
             lucide.createIcons();
             
             const container = document.getElementById('latin-container');
@@ -672,7 +715,6 @@
             hide('introStage'); 
             show('gameStage');
             
-            // Si quieres que el audio empiece solo al darle al botón jugar (recomendado):
             if (!isAudioPlaying) toggleAudio();
         }
 
@@ -713,46 +755,7 @@
                 lucide.createIcons();
             }
         }
-// --- FUNCIONES PREMIUM AÑADIDAS ---
 
-        // 1. BLOC DE NOTAS
-        function toggleNotepad() {
-            document.getElementById('notepad-modal').classList.toggle('hidden-stage');
-        }
-        
-        // Guardar las notas automáticamente cada vez que el usuario teclea
-        document.getElementById('notepad-text').addEventListener('input', function(e) {
-            localStorage.setItem('orpheus_notes', e.target.value);
-        });
-
-        // 2. SISTEMA DE PISTAS (Depende de currentStage)
-        const hints = {
-            1: "Fíjate en las terminaciones verbales pasivas y activas. El primer verbo es 'rapta erit'. Búscalo en el texto.",
-            2: "Caronte exige saber qué aplacó a Cerbero ('cantu', 4ª decl.). Busca también una palabra de la 5ª que signifique 'esperanza'.",
-            3: "La condición de Plutón empieza por 'Si eam...'. Recuerda que el 'infeliz amante' es quien gira el rostro.",
-            4: "Orfeo usaba su lira (música). El río de los muertos es el Estigia. La musa de la elocuencia es Calíope.",
-            5: "P-L-U-T-O tiene 5 letras. El verbo 'habitant' acaba en -ant (1ª conj.). El ablativo es el caso número 6."
-        };
-
-        function showHint() {
-            // Un alert nativo personalizado con el susurro
-            alert("👁️ EL ORÁCULO SUSURRA:\n\n" + hints[currentStage]);
-        }
-
-        // 3. EFECTOS DE SONIDO (SFX)
-        function playClickSFX() {
-            const sfx = document.getElementById('click-sfx');
-            sfx.currentTime = 0; // Reinicia el sonido por si haces clicks muy rápidos
-            sfx.volume = 0.4;
-            sfx.play().catch(e => console.log("Esperando interacción para el sonido"));
-        }
-
-        // Añadir el sonido a todos los botones del juego automáticamente
-        document.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', playClickSFX);
-        });
-        
-        // --- FIN FUNCIONES PREMIUM ---
         function normalizeString(str) { return str.toLowerCase().trim().replace(/[.,;:"!?()]/g, ''); }
 
         function unlockLevel(from, to, progressPercent) {
@@ -865,16 +868,6 @@
                 });
             }
         }
-       <div id="notepad-modal" class="fixed top-20 right-6 w-80 bg-[#111113] border border-red-900/50 p-4 rounded-xl shadow-[0_0_30px_rgba(0,0,0,0.8)] hidden-stage z-[300]">
-        <div class="flex justify-between items-center mb-3 border-b border-red-900/30 pb-2">
-            <h4 class="font-cinzel text-red-400 uppercase tracking-widest text-sm"><i data-lucide="scroll" class="inline w-4 h-4 mr-1"></i> Apuntes del Alma</h4>
-            <button onclick="toggleNotepad()" class="text-zinc-500 hover:text-red-500 transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-        </div>
-        <textarea id="notepad-text" class="w-full h-48 bg-black/60 text-zinc-300 border border-zinc-800 rounded p-3 focus:outline-none focus:border-red-600 font-serif resize-none shadow-inner" placeholder="Escribe aquí tus deducciones, códigos o declinaciones..."></textarea>
-    </div>
-
-    <script>
-        // Variables y funciones para las mejoras Premium...
-        let isAudioPlaying = false;
+    </script>
 </body>
 </html>
